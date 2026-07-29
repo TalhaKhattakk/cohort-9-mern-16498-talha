@@ -65,7 +65,12 @@ router.delete('/:id', async (req, res) => {
     }
     res.json({ message: 'Note deleted successfully', id: req.params.id });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    // Malformed/invalid ID -> client's fault (400)
+    if (error.name === 'CastError') {
+      return res.status(400).json({ message: 'Invalid note ID' });
+    }
+    // Anything else (e.g. database failure) -> server's fault (500)
+    res.status(500).json({ message: error.message });
   }
 });
 
