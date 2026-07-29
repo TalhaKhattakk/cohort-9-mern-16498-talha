@@ -2,33 +2,33 @@ const express = require('express');
 const router = express.Router();
 const Note = require('../models/Note');
 
-// GET /api/notes - Get all notes
+//Get all notes for a specific user
 router.get('/', async (req, res) => {
   try {
-    const notes = await Note.find().sort({ createdAt: -1 });
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ message: 'userId is required' });
+    }
+    const notes = await Note.find({ userId }).sort({ createdAt: -1 });
     res.json(notes);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// POST /api/notes - Create a new note
+//Create a new note
 router.post('/', async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, userId } = req.body;
 
-  if (!title || !content) {
-    return res.status(400).json({ message: 'Title and content are required' });
+  if (!title || !content || !userId) {
+    return res.status(400).json({ message: 'Title, content, and userId are required' });
   }
 
   try {
-    const newNote = new Note({
-      title,
-      content
-    });
+    const newNote = new Note({ title, content, userId });
     const savedNote = await newNote.save();
     res.status(201).json(savedNote);
   } catch (error) {
-    // Validation errors are the client's fault (400), anything else is a server-side failure (500)
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: error.message });
     }
@@ -36,19 +36,28 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/notes/:id - Update a note by ID
+//Update a note by ID (only if it belongs to the requesting user)
 router.put('/:id', async (req, res) => {
   try {
-    const updatedNote = await Note.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!updatedNote) {
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: 'userId is required' });
+    }
+
+    const existingNote = await Note.findOne({ _id: req.params.id, userId });
+    if (!existingNote) {
       return res.status(404).json({ message: 'Note not found' });
     }
+
+    const updatedNote = await Note.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
     res.json(updatedNote);
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ message: 'Invalid note ID' });
+    }
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: error.message });
     }
@@ -56,20 +65,23 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/notes/:id - Delete a note by ID
+// elete a note by ID (only if it belongs to the requesting user)
 router.delete('/:id', async (req, res) => {
   try {
-    const note = await Note.findByIdAndDelete(req.params.id);
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ message: 'userId is required' });
+    }
+
+    const note = await Note.findOneAndDelete({ _id: req.params.id, userId });
     if (!note) {
       return res.status(404).json({ message: 'Note not found' });
     }
     res.json({ message: 'Note deleted successfully', id: req.params.id });
   } catch (error) {
-    // Malformed/invalid ID -> client's fault (400)
     if (error.name === 'CastError') {
       return res.status(400).json({ message: 'Invalid note ID' });
     }
-    // Anything else (e.g. database failure) -> server's fault (500)
     res.status(500).json({ message: error.message });
   }
 });
