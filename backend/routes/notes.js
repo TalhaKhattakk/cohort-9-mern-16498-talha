@@ -28,21 +28,44 @@ router.post('/', async (req, res) => {
     const savedNote = await newNote.save();
     res.status(201).json(savedNote);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    // Validation errors are the client's fault (400), anything else is a server-side failure (500)
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// PUT /api/notes/:id - Update a note by ID
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedNote = await Note.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!updatedNote) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+    res.json(updatedNote);
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message });
   }
 });
 
 // DELETE /api/notes/:id - Delete a note by ID
 router.delete('/:id', async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
+    const note = await Note.findByIdAndDelete(req.params.id);
     if (!note) {
       return res.status(404).json({ message: 'Note not found' });
     }
-    await Note.findByIdAndDelete(req.params.id);
     res.json({ message: 'Note deleted successfully', id: req.params.id });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 });
 

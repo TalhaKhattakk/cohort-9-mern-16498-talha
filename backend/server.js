@@ -10,16 +10,19 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Database Connection
-mongoose
-  .connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/notesapp')
-  .then(() => console.log('Successfully connected to MongoDB.'))
-  .catch((err) => console.error('MongoDB connection error:', err));
-
 // Routes
 app.use('/api/notes', require('./routes/notes'));
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Database Connection — only start the server once MongoDB is ready
+mongoose
+  .connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/notesapp')
+  .then(() => {
+    console.log('Successfully connected to MongoDB.');
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1); // exit if we can't connect — no point running without a database
+  });
