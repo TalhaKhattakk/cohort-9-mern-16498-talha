@@ -1,3 +1,11 @@
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (e) {
+  // fallback if DNS setting fails
+}
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -11,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/notes', require('./routes/notes'));
 
 // Database Connection — only start the server once MongoDB is ready
