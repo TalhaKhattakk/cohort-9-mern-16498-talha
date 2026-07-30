@@ -1,7 +1,14 @@
-const jwt = require('jsonwebtoken');
+import { Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { AuthRequest, JwtPayload } from '../types';
 
-const auth = (req, res, next) => {
+export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return res.status(500).json({ message: 'Server configuration error: JWT_SECRET environment variable is missing.' });
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ message: 'No authentication token provided. Authorization denied.' });
@@ -12,12 +19,12 @@ const auth = (req, res, next) => {
       return res.status(401).json({ message: 'Authentication token missing. Authorization denied.' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-    req.user = decoded; // Contains user id and email
+    const decoded = jwt.verify(token, secret) as JwtPayload;
+    req.user = decoded;
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Token is invalid or expired. Authorization denied.' });
   }
 };
 
-module.exports = auth;
+export default auth;

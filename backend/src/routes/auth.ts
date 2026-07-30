@@ -1,14 +1,24 @@
-const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import { Router, Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import User, { IUser } from '../models/User';
+import { SignupRequestBody, LoginRequestBody, JwtPayload } from '../types';
 
-// Helper function to generate JWT token
-const generateToken = (user) => {
+const router = Router();
+
+// Helper function to generate typed JWT token
+const generateToken = (user: IUser): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not configured.');
+  }
+  const payload: JwtPayload = {
+    id: user._id.toString(),
+    email: user.email
+  };
   return jwt.sign(
-    { id: user._id, email: user.email },
-    process.env.JWT_SECRET || 'fallback_secret',
+    payload,
+    secret,
     { expiresIn: '1d' }
   );
 };
@@ -16,11 +26,10 @@ const generateToken = (user) => {
 // @route   POST /api/auth/signup
 // @desc    Register new user, hash password, and return JWT
 // @access  Public
-router.post('/signup', async (req, res) => {
+router.post('/signup', async (req: Request<{}, {}, SignupRequestBody>, res: Response) => {
   try {
     const { name, email, password } = req.body;
 
-    // Basic validation
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
@@ -29,17 +38,14 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters long' });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    // Hash password with bcrypt
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Save user
     const newUser = new User({
       name: name || '',
       email: email.toLowerCase(),
@@ -47,11 +53,9 @@ router.post('/signup', async (req, res) => {
     });
 
     const savedUser = await newUser.save();
-
-    // Generate JWT token
     const token = generateToken(savedUser);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'User registered successfully',
       token,
       user: {
@@ -60,39 +64,36 @@ router.post('/signup', async (req, res) => {
         email: savedUser.email
       }
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (error: any) {
+    console.error('Error in POST /api/auth/signup:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user, verify password, and return JWT
 // @access  Public
-router.post('/login', async (req, res) => {
+router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    // Basic validation
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Find user by email
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Verify password with bcrypt
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Generate JWT token
     const token = generateToken(user);
 
-    res.json({
+    return res.json({
       message: 'Login successful',
       token,
       user: {
@@ -101,9 +102,10 @@ router.post('/login', async (req, res) => {
         email: user.email
       }
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (error: any) {
+    console.error('Error in POST /api/auth/login:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-module.exports = router;
+export default router;
