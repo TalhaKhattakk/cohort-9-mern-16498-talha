@@ -64,7 +64,10 @@ router.post('/signup', async (req: Request<{}, {}, SignupRequestBody>, res: Resp
         email: savedUser.email
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: number }).code === 11000) {
+      return res.status(400).json({ message: 'User already exists with this email' });
+    }
     console.error('Error in POST /api/auth/signup:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -81,7 +84,7 @@ router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Respon
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -102,7 +105,7 @@ router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Respon
         email: user.email
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in POST /api/auth/login:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }

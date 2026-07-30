@@ -19,7 +19,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 
     const notes = await Note.find({ userId: req.user.id }).sort({ createdAt: -1 });
     return res.json(notes);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in GET /api/notes:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -48,8 +48,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
     const savedNote = await newNote.save();
     return res.status(201).json(savedNote);
-  } catch (error: any) {
-    if (error.name === 'ValidationError') {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'ValidationError') {
       return res.status(400).json({ message: error.message });
     }
     console.error('Error in POST /api/notes:', error);
@@ -77,12 +77,14 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
 
     const updatedNote = await existingNote.save();
     return res.json(updatedNote);
-  } catch (error: any) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ message: 'Invalid note ID' });
-    }
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.name === 'CastError') {
+        return res.status(400).json({ message: 'Invalid note ID' });
+      }
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ message: error.message });
+      }
     }
     console.error('Error in PUT /api/notes/:id:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -103,8 +105,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Note not found' });
     }
     return res.json({ message: 'Note deleted successfully', id: req.params.id });
-  } catch (error: any) {
-    if (error.name === 'CastError') {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'CastError') {
       return res.status(400).json({ message: 'Invalid note ID' });
     }
     console.error('Error in DELETE /api/notes/:id:', error);
