@@ -13,7 +13,7 @@ const auth = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-    req.user = decoded; // Contains user id and email
+    req.user = decoded; 
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Token is invalid or expired. Authorization denied.' });

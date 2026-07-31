@@ -1,14 +1,10 @@
 const express = require('express');
-const router = express.Router();
 const Note = require('../models/Note');
 const auth = require('../middleware/auth');
-
-// Apply authentication middleware to all note routes
+const router = express.Router();
 router.use(auth);
 
-// @route   GET /api/notes
-// @desc    Get all notes for authenticated user
-// @access  Private
+//Get all notes for authenticated user
 router.get('/', async (req, res) => {
   try {
     const notes = await Note.find({ userId: req.user.id }).sort({ createdAt: -1 });
@@ -18,9 +14,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// @route   POST /api/notes
-// @desc    Create a new note for authenticated user
-// @access  Private
+//Create a new note for authenticated user
 router.post('/', async (req, res) => {
   const { title, content } = req.body;
 
@@ -44,9 +38,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// @route   PUT /api/notes/:id
-// @desc    Update a note by ID (only if it belongs to authenticated user)
-// @access  Private
+//Update a note by ID (only if it belongs to authenticated user)
 router.put('/:id', async (req, res) => {
   try {
     const existingNote = await Note.findOne({ _id: req.params.id, userId: req.user.id });
@@ -71,9 +63,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// @route   DELETE /api/notes/:id
-// @desc    Delete a note by ID (only if it belongs to authenticated user)
-// @access  Private
+
+//Delete a note by ID (only if it belongs to authenticated user)
 router.delete('/:id', async (req, res) => {
   try {
     const note = await Note.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
