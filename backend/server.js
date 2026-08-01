@@ -1,5 +1,6 @@
 
-//i wasnt able to connect to the mongo atlas cluster from my home network, so i had to use the local mongo db server instead.
+//i wasnt able to connect to the mongo atlas cluster from my home network 
+//i also allowed all ip addresses in the network access settings of the mongo db cluster but still it was not working
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 try {
