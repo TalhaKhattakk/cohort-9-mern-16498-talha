@@ -17,7 +17,7 @@ const generateToken = (user) => {
 const signup = asyncHandler(async (req, res, next) => {
   const { name, email, password } = req.body;
 
-  if (!email || !password) {
+  if (!email || typeof email !== 'string' || !password || typeof password !== 'string'){
     return next(new AppError('Email and password are required', 400));
   }
 
@@ -27,7 +27,7 @@ const signup = asyncHandler(async (req, res, next) => {
 
   const existingUser = await User.findOne({ email: email.toLowerCase() });
   if (existingUser) {
-    logger.warn({ email }, 'Signup attempted with an email that already exists');
+    logger.warn({}, 'Signup attempted with an email that already exists');
     return next(new AppError('User already exists with this email', 400));
   }
 
@@ -43,7 +43,7 @@ const signup = asyncHandler(async (req, res, next) => {
   const savedUser = await newUser.save();
   const token = generateToken(savedUser);
 
-  logger.info({ userId: savedUser._id, email: savedUser.email }, 'New user registered');
+  logger.info({ userId: savedUser._id }, 'New user registered');
 
   res.status(201).json({
     message: 'User registered successfully',
@@ -59,14 +59,14 @@ const signup = asyncHandler(async (req, res, next) => {
 // this will login user
 const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
+  
+  if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
     return next(new AppError('Email and password are required', 400));
   }
 
   const user = await User.findOne({ email: email.toLowerCase() });
   if (!user) {
-    logger.warn({ email }, 'Login attempt for non-existent user');
+    logger.warn({}, 'Login attempt for non-existent user');
     return next(new AppError('Invalid credentials', 400));
   }
 
