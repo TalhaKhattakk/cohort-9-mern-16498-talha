@@ -48,11 +48,18 @@ const errorHandler = (err, req, res, next) => {
     logger.warn(logPayload, message);
   }
 
+  // don't leak raw error messages for unexpected 5xx errors - only our own
+  // AppError instances (isOperational: true) are safe to show to the client
+  const responseMessage =
+    statusCode >= 500 && !err.isOperational
+      ? 'Something went wrong. Please try again later.'
+      : message;
+
   res.status(statusCode).json({
     success: false,
-    message,
-    // only leak the stack trace in non-production so users never see it
-    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
+    message: responseMessage,
+    // only leak the stack trace in development so users never see it
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
 
