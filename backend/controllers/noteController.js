@@ -1,78 +1,57 @@
 const Note = require('../models/Note');
+const asyncHandler = require('../utils/asyncHandler');
+const AppError = require('../utils/AppError');
+const logger = require('../config/logger');
 
-// used to get all notes 
-const getNotes = async (req, res) => {
-  try {
-    const notes = await Note.find({ userId: req.user.id }).sort({ createdAt: -1 });
-    res.json(notes);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+// used to get all notes
+const getNotes = asyncHandler(async (req, res) => {
+  const notes = await Note.find({ userId: req.user.id }).sort({ createdAt: -1 });
+  logger.info({ userId: req.user.id, count: notes.length }, 'Fetched notes');
+  res.json(notes);
+});
 
-// used to create a newnote for a user
-const createNote = async (req, res) => {
+// used to create a new note for a user
+const createNote = asyncHandler(async (req, res, next) => {
   const { title, content } = req.body;
 
   if (!title || !content) {
-    return res.status(400).json({ message: 'Title and content are required' });
+    return next(new AppError('Title and content are required', 400));
   }
 
-  try {
-    const newNote = new Note({
-      title,
-      content,
-      userId: req.user.id
-    });
-    const savedNote = await newNote.save();
-    res.status(201).json(savedNote);
-  } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ message: error.message });
-    }
-    res.status(500).json({ message: error.message });
-  }
-};
+  const newNote = new Note({
+    title,
+    content,
+    userId: req.user.id
+  });
+  const savedNote = await newNote.save();
+  logger.info({ userId: req.user.id, noteId: savedNote._id }, 'Note created');
+  res.status(201).json(savedNote);
+});
 
 // to update a note
-const updateNote = async (req, res) => {
-  try {
-    const existingNote = await Note.findOne({ _id: req.params.id, userId: req.user.id });
-    if (!existingNote) {
-      return res.status(404).json({ message: 'Note not found' });
-    }
-
-    const { title, content } = req.body;
-    if (title !== undefined) existingNote.title = title;
-    if (content !== undefined) existingNote.content = content;
-
-    const updatedNote = await existingNote.save();
-    res.json(updatedNote);
-  } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ message: 'Invalid note ID' });
-    }
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ message: error.message });
-    }
-    res.status(500).json({ message: error.message });
+const updateNote = asyncHandler(async (req, res, next) => {
+  const existingNote = await Note.findOne({ _id: req.params.id, userId: req.user.id });
+  if (!existingNote) {
+    return next(new AppError('Note not found', 404));
   }
-};
+
+  const { title, content } = req.body;
+  if (title !== undefined) existingNote.title = title;
+  if (content !== undefined) existingNote.content = content;
+
+  const updatedNote = await existingNote.save();
+  logger.info({ userId: req.user.id, noteId: updatedNote._id }, 'Note updated');
+  res.json(updatedNote);
+});
 
 // to delete a note
-const deleteNote = async (req, res) => {
-  try {
-    const note = await Note.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
-    if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
-    }
-    res.json({ message: 'Note deleted successfully', id: req.params.id });
-  } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ message: 'Invalid note ID' });
-    }
-    res.status(500).json({ message: error.message });
+const deleteNote = asyncHandler(async (req, res, next) => {
+  const note = await Note.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+  if (!note) {
+    return next(new AppError('Note not found', 404));
   }
-};
+  logger.info({ userId: req.user.id, noteId: req.params.id }, 'Note deleted');
+  res.json({ message: 'Note deleted successfully', id: req.params.id });
+});
 
 module.exports = { getNotes, createNote, updateNote, deleteNote };
