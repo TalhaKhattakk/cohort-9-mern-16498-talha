@@ -50,6 +50,7 @@ mongoose.connect(process.env.MONGO_URI  ).then(() => {
 // catch anything that slips past express (e.g. errors in non-request code)
 process.on('unhandledRejection', (err) => {
   logger.error({ err }, 'Unhandled Promise Rejection');
+  process.exit(1);
 });
 
 process.on('uncaughtException', (err) => {
