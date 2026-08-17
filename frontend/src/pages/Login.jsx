@@ -11,9 +11,9 @@ function Login() {
 
  const handleLogin = async (e) => {
   e.preventDefault();
+  setErrorMsg("");
   try {
     const res = await axiosClient.post("/auth/login", { email, password });
-    console.log(res.data);
     localStorage.setItem("token", res.data.token);
     navigate("/dashboard");
   } catch (err) {
