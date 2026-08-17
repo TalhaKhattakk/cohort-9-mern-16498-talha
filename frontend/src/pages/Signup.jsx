@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import "./Signup.css";
+import "./Auth.css";
 
 function Signup() {
   const [name, setName] = useState("");
@@ -18,8 +18,12 @@ function Signup() {
       await axiosClient.post("/auth/signup", { name, email, password });
       navigate("/login");
     } catch (err) {
-      console.log(err);
-      setErrorMsg("Something went wrong, try again");
+      console.log(err.message);
+      if (err.response) {
+        setErrorMsg(err.response.data.message || "Something went wrong, try again");
+      } else {
+        setErrorMsg("Something went wrong. Please try again.");
+      }
     }
   }
 

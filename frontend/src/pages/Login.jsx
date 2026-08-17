@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import "./Signup.css";
+import "./Auth.css";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -9,19 +9,24 @@ function Login() {
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setErrorMsg("");
-
-    try {
-      const res = await axiosClient.post("/auth/login", { email, password });
-      localStorage.setItem("token", res.data.token);
-      navigate("/dashboard");
-    } catch (err) {
-      console.log(err);
-      setErrorMsg("Invalid email or password");
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axiosClient.post("/auth/login", { email, password });
+    console.log(res.data);
+    localStorage.setItem("token", res.data.token);
+    navigate("/dashboard");
+  } catch (err) {
+    console.log(err);
+    if (err.response) {
+      // if the backend respond with an error (400, 401, etc.) then it will say in the response data what the error is
+      setErrorMsg(err.response.data.message || "Invalid email or password");
+    } else {
+      // but if we get no response from the backend then for that we will just say something went wrong
+      setErrorMsg("Something went wrong. Please try again.");
     }
   }
+};
 
   return (
     <div className="auth-page">
