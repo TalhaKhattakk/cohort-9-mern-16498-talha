@@ -90,4 +90,13 @@ const login = asyncHandler(async (req, res, next) => {
   });
 });
 
-module.exports = { signup, login };
+// this will return the loggedin user info 
+const getMe = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id).select('-password');
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+  res.json({ user });
+});
+
+module.exports = { signup, login, getMe };
