@@ -14,16 +14,31 @@ function Dashboard() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // rich text editor for the note content
+  const [viewMode, setViewMode] = useState("idle");
+  const [toast, setToast] = useState("");
+  const [noteToDelete, setNoteToDelete] = useState(null);
+  const [, forceUpdate] = useState(0);
+
   const editor = useEditor({
     extensions: [StarterKit],
     content: "",
+    onTransaction: () => {
+      forceUpdate((n) => n + 1);
+    },
   });
 
   useEffect(() => {
     fetchNotes();
     fetchUser();
   }, []);
+
+  // toast will auto after some time
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(""), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   async function fetchNotes() {
     try {
@@ -47,52 +62,85 @@ function Dashboard() {
     }
   }
 
-  // load a note into the editor so it can be edited
-  function selectNote(note) {
+  // when a note is clicked in the sidebar, it will open in the main view
+  function openNote(note) {
     setSelectedNote(note);
-    setTitle(note.title);
-    editor.commands.setContent(note.content);
+    setViewMode("detail");
   }
 
-  // clear the form for a new note
+  // add note button in the sidebar
   function startNewNote() {
     setSelectedNote(null);
     setTitle("");
     editor.commands.setContent("");
+    setViewMode("edit");
+  }
+
+  // will open the edit note view
+  function startEditNote() {
+    setTitle(selectedNote.title);
+    editor.commands.setContent(selectedNote.content);
+    setViewMode("edit");
+  }
+
+  function cancelEdit() {
+    if (selectedNote) {
+      setViewMode("detail");
+    } else {
+      setViewMode("idle");
+    }
   }
 
   async function handleSave(e) {
     e.preventDefault();
     const content = editor.getHTML();
     try {
+      let saved;
       if (selectedNote) {
-        // editing an existing note
-        await axiosClient.put(`/notes/${selectedNote._id}`, { title, content }, {
+        const res = await axiosClient.put(`/notes/${selectedNote._id}`, { title, content }, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        saved = res.data;
       } else {
-        // creating a new one
-        await axiosClient.post("/notes", { title, content }, {
+        const res = await axiosClient.post("/notes", { title, content }, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        saved = res.data;
       }
-      fetchNotes();
-      startNewNote();
+      await fetchNotes();
+      setSelectedNote(saved);
+      setViewMode("detail");
+      setToast("Note saved");
     } catch (err) {
       console.log(err.message);
+      setToast("Something went wrong, note not saved");
     }
   }
 
-  async function handleDelete(id) {
+  function requestDelete(note) {
+    setNoteToDelete(note);
+  }
+
+  function cancelDelete() {
+    setNoteToDelete(null);
+  }
+
+  async function confirmDelete() {
     try {
-      await axiosClient.delete(`/notes/${id}`, {
+      await axiosClient.delete(`/notes/${noteToDelete._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchNotes();
-      // if we just deleted the note that's currently open, clear the editor too
-      if (selectedNote && selectedNote._id === id) startNewNote();
+      await fetchNotes();
+      if (selectedNote && selectedNote._id === noteToDelete._id) {
+        setSelectedNote(null);
+        setViewMode("idle");
+      }
+      setToast("Note deleted");
     } catch (err) {
       console.log(err.message);
+      setToast("Something went wrong, note not deleted");
+    } finally {
+      setNoteToDelete(null);
     }
   }
 
@@ -101,7 +149,6 @@ function Dashboard() {
     navigate("/login");
   }
 
-  // simple client side filter, nothing fancy
   const filteredNotes = notes.filter((note) =>
     note.title.toLowerCase().includes(search.toLowerCase())
   );
@@ -121,15 +168,17 @@ function Dashboard() {
         <button className="dash-new-btn" onClick={startNewNote}>+ Add Note</button>
 
         <div className="dash-note-list">
+          {filteredNotes.length === 0 && (
+            <p className="dash-empty-hint">No notes yet</p>
+          )}
           {filteredNotes.map((note) => (
             <div
               key={note._id}
               className={`dash-note-item ${selectedNote && selectedNote._id === note._id ? "active" : ""}`}
             >
-              {/* using a real button here instead of a div so it's keyboard accessible */}
               <button
                 className="dash-note-select-btn"
-                onClick={() => selectNote(note)}
+                onClick={() => openNote(note)}
               >
                 {note.title}
               </button>
@@ -138,10 +187,10 @@ function Dashboard() {
                 aria-label={`Delete ${note.title}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDelete(note._id);
+                  requestDelete(note);
                 }}
               >
-                Delete
+                ✕
               </button>
             </div>
           ))}
@@ -159,24 +208,124 @@ function Dashboard() {
       </div>
 
       <div className="dash-main">
-        <form onSubmit={handleSave}>
-          <input
-            className="dash-title-input"
-            placeholder="Note title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
 
-          <div className="dash-editor-wrapper">
-            <EditorContent editor={editor} />
+        {viewMode === "idle" && (
+          <div className="dash-idle">
+            <button className="dash-add-big-btn" onClick={startNewNote}>+ Add Note</button>
           </div>
+        )}
 
-          <button type="submit" className="dash-save-btn">
-            {selectedNote ? "Update Note" : "Save Note"}
-          </button>
-        </form>
+        //will show a read only view of the notes
+        {viewMode === "detail" && selectedNote && (
+          <div className="dash-detail">
+            <h1 className="dash-detail-title">{selectedNote.title}</h1>
+            <div
+              className="dash-detail-content"
+              dangerouslySetInnerHTML={{ __html: selectedNote.content }}
+            />
+            <div className="dash-detail-actions">
+              <button className="dash-update-btn" onClick={startEditNote}>Update Note</button>
+              <button className="dash-delete-note-btn" onClick={() => requestDelete(selectedNote)}>
+                Delete Note
+              </button>
+            </div>
+          </div>
+        )}
+
+        //this will highlight which toold is being used in the editor
+        {viewMode === "edit" && (
+          <form onSubmit={handleSave}>
+            <input
+              className="dash-title-input"
+              placeholder="Note title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+
+            <div className="dash-toolbar">
+              <button
+                type="button"
+                className={editor?.isActive("bold") ? "active" : ""}
+                onClick={() => editor.chain().focus().toggleBold().run()}
+              >
+                B
+              </button>
+              <button
+                type="button"
+                className={editor?.isActive("italic") ? "active" : ""}
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+              >
+                I
+              </button>
+              <button
+                type="button"
+                className={editor?.isActive("strike") ? "active" : ""}
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+              >
+                S
+              </button>
+              <button
+                type="button"
+                className={editor?.isActive("heading", { level: 1 }) ? "active" : ""}
+                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+              >
+                H1
+              </button>
+              <button
+                type="button"
+                className={editor?.isActive("heading", { level: 2 }) ? "active" : ""}
+                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              >
+                H2
+              </button>
+              <button
+                type="button"
+                className={editor?.isActive("bulletList") ? "active" : ""}
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+              >
+                • List
+              </button>
+              <button
+                type="button"
+                className={editor?.isActive("orderedList") ? "active" : ""}
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              >
+                1. List
+              </button>
+            </div>
+
+            <div className="dash-editor-wrapper">
+              <EditorContent editor={editor} />
+            </div>
+
+            <div className="dash-edit-actions">
+              <button type="submit" className="dash-save-btn">
+                {selectedNote ? "Update Note" : "Save Note"}
+              </button>
+              <button type="button" className="dash-cancel-btn" onClick={cancelEdit}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
       </div>
+
+      
+      {noteToDelete && (
+        <div className="dash-modal-overlay">
+          <div className="dash-modal">
+            <p>Delete "{noteToDelete.title}"? This can't be undone.</p>
+            <div className="dash-modal-actions">
+              <button className="dash-delete-note-btn" onClick={confirmDelete}>Delete</button>
+              <button className="dash-cancel-btn" onClick={cancelDelete}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+     
+      {toast && <div className="dash-toast">{toast}</div>}
     </div>
   );
 }

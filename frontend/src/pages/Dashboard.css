@@ -3,6 +3,7 @@
   height: 100vh;
   font-family: sans-serif;
   background: #fff;
+  position: relative;
 }
 
 .dash-sidebar {
@@ -45,6 +46,11 @@
   overflow-y: auto;
 }
 
+.dash-empty-hint {
+  color: #999;
+  font-size: 13px;
+}
+
 .dash-note-item {
   display: flex;
   justify-content: space-between;
@@ -61,6 +67,16 @@
 
 .dash-note-item.active {
   background: #e2e2e2;
+}
+
+.dash-note-select-btn {
+  background: none;
+  border: none;
+  text-align: left;
+  flex: 1;
+  font-size: 14px;
+  padding: 0;
+  cursor: pointer;
 }
 
 .dash-delete-btn {
@@ -105,12 +121,70 @@
   overflow-y: auto;
 }
 
+.dash-idle {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-add-big-btn {
+  background: #3f5a52;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 16px 32px;
+  font-size: 16px;
+}
+
+.dash-detail-title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 24px;
+  color: #333;
+}
+
+.dash-detail-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  padding: 20px;
+  min-height: 200px;
+  margin-bottom: 16px;
+}
+
+.dash-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dash-update-btn {
+  background: #3f5a52;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 9px 18px;
+  font-size: 14px;
+}
+
+.dash-delete-note-btn {
+  background: #c0202c;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 9px 18px;
+  font-size: 14px;
+}
+
 .dash-title-input {
   width: 100%;
   padding: 10px;
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   border: none;
   border-bottom: 1px solid #e2e2e2;
   box-sizing: border-box;
@@ -121,17 +195,43 @@
   border-bottom-color: #3f5a52;
 }
 
+.dash-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.dash-toolbar button {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dash-toolbar button.active {
+  background: #3f5a52;
+  color: #fff;
+  border-color: #3f5a52;
+}
+
 .dash-editor-wrapper {
   border: 1px solid #e2e2e2;
   border-radius: 6px;
   padding: 16px;
-  min-height: 300px;
+  min-height: 280px;
   margin-bottom: 16px;
 }
 
 .dash-editor-wrapper .ProseMirror {
   outline: none;
-  min-height: 280px;
+  min-height: 260px;
+}
+
+.dash-edit-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .dash-save-btn {
@@ -142,12 +242,51 @@
   padding: 10px 24px;
   font-size: 14px;
 }
-.dash-note-select-btn {
-  background: none;
+
+.dash-cancel-btn {
+  background: #eee;
+  color: #333;
   border: none;
-  text-align: left;
-  flex: 1;
+  border-radius: 5px;
+  padding: 10px 24px;
   font-size: 14px;
-  padding: 0;
-  cursor: pointer;
+}
+
+/* delete confirm modal */
+.dash-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-modal {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  width: 320px;
+}
+
+.dash-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* toast */
+.dash-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
 }
