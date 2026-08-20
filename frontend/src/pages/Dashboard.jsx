@@ -32,7 +32,7 @@ function Dashboard() {
     fetchUser();
   }, []);
 
-  // toast will auto after some time
+  // toast will disappear after 2 seconds
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(""), 2000);
@@ -215,7 +215,7 @@ function Dashboard() {
           </div>
         )}
 
-        //will show a read only view of the notes
+        {/* will show a read only view of the notes */}
         {viewMode === "detail" && selectedNote && (
           <div className="dash-detail">
             <h1 className="dash-detail-title">{selectedNote.title}</h1>
@@ -232,7 +232,7 @@ function Dashboard() {
           </div>
         )}
 
-        //this will highlight which toold is being used in the editor
+        {/* this will highlight which tool is being used in the editor */}
         {viewMode === "edit" && (
           <form onSubmit={handleSave}>
             <input
