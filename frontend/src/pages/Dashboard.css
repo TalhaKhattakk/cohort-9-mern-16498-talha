@@ -142,3 +142,12 @@
   padding: 10px 24px;
   font-size: 14px;
 }
+.dash-note-select-btn {
+  background: none;
+  border: none;
+  text-align: left;
+  flex: 1;
+  font-size: 14px;
+  padding: 0;
+  cursor: pointer;
+}

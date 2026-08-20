@@ -14,6 +14,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
+  // rich text editor for the note content
   const editor = useEditor({
     extensions: [StarterKit],
     content: "",
@@ -46,12 +47,14 @@ function Dashboard() {
     }
   }
 
+  // load a note into the editor so it can be edited
   function selectNote(note) {
     setSelectedNote(note);
     setTitle(note.title);
     editor.commands.setContent(note.content);
   }
 
+  // clear the form for a new note
   function startNewNote() {
     setSelectedNote(null);
     setTitle("");
@@ -63,10 +66,12 @@ function Dashboard() {
     const content = editor.getHTML();
     try {
       if (selectedNote) {
+        // editing an existing note
         await axiosClient.put(`/notes/${selectedNote._id}`, { title, content }, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
+        // creating a new one
         await axiosClient.post("/notes", { title, content }, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -84,6 +89,7 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchNotes();
+      // if we just deleted the note that's currently open, clear the editor too
       if (selectedNote && selectedNote._id === id) startNewNote();
     } catch (err) {
       console.log(err.message);
@@ -95,6 +101,7 @@ function Dashboard() {
     navigate("/login");
   }
 
+  // simple client side filter, nothing fancy
   const filteredNotes = notes.filter((note) =>
     note.title.toLowerCase().includes(search.toLowerCase())
   );
@@ -118,17 +125,23 @@ function Dashboard() {
             <div
               key={note._id}
               className={`dash-note-item ${selectedNote && selectedNote._id === note._id ? "active" : ""}`}
-              onClick={() => selectNote(note)}
             >
-              <span>{note.title}</span>
+              {/* using a real button here instead of a div so it's keyboard accessible */}
+              <button
+                className="dash-note-select-btn"
+                onClick={() => selectNote(note)}
+              >
+                {note.title}
+              </button>
               <button
                 className="dash-delete-btn"
+                aria-label={`Delete ${note.title}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(note._id);
                 }}
               >
-                ✕
+                Delete
               </button>
             </div>
           ))}
