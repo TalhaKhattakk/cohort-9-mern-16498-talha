@@ -11,12 +11,12 @@ const axiosClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// if any request comes back 401 (invalid/expired token) it will clear the 
-// token and send the user back to login instead of leaving them stuck
+// if a request that was carrying a token comes back 401 (invalid/expired session), it will send the user back to login.
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const hadAuthHeader = Boolean(error.config?.headers?.Authorization);
+    if (error.response && error.response.status === 401 && hadAuthHeader) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
