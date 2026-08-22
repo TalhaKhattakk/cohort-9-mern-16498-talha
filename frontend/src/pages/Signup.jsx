@@ -12,9 +12,24 @@ function Signup() {
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
 
-  async function handleSignup(e) {
+
+    async function handleSignup(e) {
     e.preventDefault();
     setErrorMsg("");
+
+    if (!name || !email || !password) {
+      setErrorMsg("Please fill all fields");
+      return;
+    }
+    if (password.length < 8) {
+      setErrorMsg("Password must be at least 8 characters long");
+      return;
+    }
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    if (!hasSpecialChar) {
+      setErrorMsg("Password must contain at least one special character");
+      return;
+    }
 
     try {
       await axiosClient.post("/auth/signup", { name, email, password });
@@ -26,26 +41,14 @@ function Signup() {
       } else {
         setErrorMsg("Something went wrong. Please try again.");
       }
-      if (!name || !email || !password) {
-        setErrorMsg("Please fill all fields");
-        return;
-      }
-      if (password.length < 8) {
-        setErrorMsg("Password must be at least 8 characters long");
-        return;
-      }
-
-      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-      if (!hasSpecialChar) {
-        setErrorMsg("Password must contain at least one special character");
-        return;
-      }
     }
   }
 
+
+
   return (
     <div className="auth-page">
-      <h1 className="auth-title">TalhaNotes</h1>
+      <h1 className="auth-title">NoteNest</h1>
       <p className="auth-tagline">Write your Notes Cleanly</p>
 
 

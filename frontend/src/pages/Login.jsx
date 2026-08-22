@@ -32,7 +32,7 @@ function Login() {
 
   return (
     <div className="auth-page">
-      <h1 className="auth-title">TalhaNotes</h1>
+      <h1 className="auth-title">NoteNest</h1>
       <p className="auth-tagline">Write your Notes Cleanly</p>
 
       <div className="auth-card">
