@@ -43,12 +43,10 @@ describe("Dashboard page", () => {
     expect(screen.getByText("talha@test.com")).toBeInTheDocument();
   });
 
-  test("shows the add note button when nothing is selected", async () => {
+  test("shows the add note button in the sidebar", async () => {
     renderDashboard();
     await screen.findByText("First note");
-    // there are two "+ Add Note" buttons on screen at once - one in the
-    // sidebar (always visible) and one centered in the idle main view
-    expect(screen.getAllByRole("button", { name: "+ Add Note" })).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "+ New Note" })).toBeInTheDocument();
   });
 
   test("opens a note in detail view when clicked", async () => {

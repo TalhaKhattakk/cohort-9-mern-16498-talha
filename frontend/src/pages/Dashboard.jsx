@@ -4,6 +4,7 @@ import { Trash2, FileText } from "lucide-react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import axiosClient from "../api/axiosClient";
+import welcomeIllustration from "../assets/NoteNestWelcome.png";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -241,7 +242,7 @@ function Dashboard() {
 
         {viewMode === "idle" && (
           <div className="dash-idle">
-            <img src="/src/assets/NoteNestWelcome.png" alt="" className="dash-idle-illustration" />
+            <img src={welcomeIllustration} alt="" className="dash-idle-illustration" />
             <h2 className="dash-idle-title">Welcome to NoteNest</h2>
             <p className="dash-idle-text">Click <strong>+ New Note</strong> to get started</p>
           </div>

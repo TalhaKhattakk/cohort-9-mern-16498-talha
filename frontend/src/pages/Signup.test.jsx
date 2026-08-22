@@ -39,7 +39,7 @@ describe("Signup page", () => {
       target: { value: "existing@test.com" },
     });
     fireEvent.change(document.querySelector('input[type="password"]'), {
-      target: { value: "password123" },
+      target: { value: "password123!" },
     });
     fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
@@ -59,7 +59,7 @@ describe("Signup page", () => {
       target: { value: "test@test.com" },
     });
     fireEvent.change(document.querySelector('input[type="password"]'), {
-      target: { value: "password123" },
+      target: { value: "password123!" },
     });
     fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
@@ -79,7 +79,7 @@ describe("Signup page", () => {
       target: { value: "talha@test.com" },
     });
     fireEvent.change(document.querySelector('input[type="password"]'), {
-      target: { value: "password123" },
+      target: { value: "password123!" },
     });
     fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
@@ -87,7 +87,7 @@ describe("Signup page", () => {
       expect(axiosClient.post).toHaveBeenCalledWith("/auth/signup", {
         name: "Talha",
         email: "talha@test.com",
-        password: "password123",
+        password: "password123!",
       });
     });
   });

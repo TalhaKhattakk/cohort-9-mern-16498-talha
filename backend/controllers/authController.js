@@ -21,8 +21,8 @@ const signup = asyncHandler(async (req, res, next) => {
     return next(new AppError('Email and password are required', 400));
   }
 
-  if (password.length < 6) {
-    return next(new AppError('Password must be at least 6 characters long', 400));
+  if (password.length < 8) {
+    return next(new AppError('Password must be at least 8 characters long', 400));
   }
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
   if (!hasSpecialChar) {
