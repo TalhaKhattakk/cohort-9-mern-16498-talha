@@ -35,7 +35,6 @@ function Signup() {
       await axiosClient.post("/auth/signup", { name, email, password });
       navigate("/login");
     } catch (err) {
-      console.log(err.message);
       if (err.response) {
         setErrorMsg(err.response.data.message || "Something went wrong, try again");
       } else {

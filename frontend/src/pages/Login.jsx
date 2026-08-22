@@ -19,7 +19,6 @@ function Login() {
     localStorage.setItem("token", res.data.token);
     navigate("/dashboard");
   } catch (err) {
-    console.log(err);
     if (err.response) {
       // if the backend respond with an error (400, 401, etc.) then it will say in the response data what the error is
       setErrorMsg(err.response.data.message || "Invalid email or password");
