@@ -7,7 +7,7 @@
 }
 
 .dash-sidebar {
-  width: 260px;
+  width: 280px;
   background: #f7f6f5;
   border-right: 1px solid #e2e2e2;
   display: flex;
@@ -16,10 +16,30 @@
   box-sizing: border-box;
 }
 
+.dash-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dash-logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
 .dash-logo {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #3b4f47;
-  margin: 0 0 16px 0;
+  margin: 0;
+}
+
+.dash-logo-tagline {
+  font-size: 11px;
+  color: #999;
+  margin: 0;
 }
 
 .dash-search {
@@ -41,6 +61,13 @@
   margin-bottom: 16px;
 }
 
+.dash-notes-label {
+  font-size: 11px;
+  color: #999;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 2px;
+}
+
 .dash-note-list {
   flex: 1;
   overflow-y: auto;
@@ -53,20 +80,22 @@
 
 .dash-note-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px 8px;
-  border-radius: 5px;
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-.dash-note-item:hover {
-  background: #eeeeee;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
 }
 
 .dash-note-item.active {
-  background: #e2e2e2;
+  border-color: #3f5a52;
+}
+
+.dash-note-icon {
+  color: #3f5a52;
+  flex-shrink: 0;
 }
 
 .dash-note-select-btn {
@@ -74,22 +103,60 @@
   border: none;
   text-align: left;
   flex: 1;
-  font-size: 14px;
   padding: 0;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dash-note-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-note-time {
+  font-size: 11px;
+  color: #999;
 }
 
 .dash-delete-btn {
   background: none;
   border: none;
   color: #999;
-  font-size: 12px;
+  flex-shrink: 0;
 }
 
 .dash-profile {
   border-top: 1px solid #e2e2e2;
   padding-top: 14px;
   margin-top: 14px;
+}
+
+.dash-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dash-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #3f5a52;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .dash-user-name {
@@ -101,7 +168,6 @@
 .dash-user-email {
   font-size: 12px;
   color: #777;
-  margin-bottom: 10px;
 }
 
 .dash-logout-btn {
@@ -124,17 +190,28 @@
 .dash-idle {
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
 }
 
-.dash-add-big-btn {
-  background: #3f5a52;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 16px 32px;
-  font-size: 16px;
+.dash-idle-illustration {
+  width: 140px;
+  height: 140px;
+  margin-bottom: 20px;
+  object-fit: contain;
+}
+
+.dash-idle-title {
+  font-size: 1.4rem;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.dash-idle-text {
+  color: #777;
+  font-size: 14px;
 }
 
 .dash-detail-title {
@@ -252,7 +329,6 @@
   font-size: 14px;
 }
 
-/* delete confirm modal */
 .dash-modal-overlay {
   position: fixed;
   top: 0;
@@ -278,7 +354,6 @@
   margin-top: 16px;
 }
 
-/* toast */
 .dash-toast {
   position: fixed;
   bottom: 24px;

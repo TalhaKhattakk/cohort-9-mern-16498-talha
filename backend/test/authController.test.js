@@ -16,7 +16,7 @@ describe('Auth Controller', () => {
   afterEach(() => sinon.restore());
 
   describe('signup', () => {
-    it('forwards a 400 error when password is shorter than 6 characters', async () => {
+    it('forwards a 400 error when password is shorter than 8 characters', async () => {
       const req = { body: { email: 'a@test.com', password: '123' } };
       const res = mockRes();
       const next = sinon.stub();
@@ -29,7 +29,7 @@ describe('Auth Controller', () => {
 
     it('forwards a 400 error when the user already exists', async () => {
       sinon.stub(User, 'findOne').resolves({ email: 'a@test.com' });
-      const req = { body: { email: 'a@test.com', password: '123456' } };
+      const req = { body: { email: 'a@test.com', password: '123456!A' } };
       const res = mockRes();
       const next = sinon.stub();
 
@@ -49,7 +49,7 @@ describe('Auth Controller', () => {
       });
       sinon.stub(jwt, 'sign').returns('faketoken');
 
-      const req = { body: { email: 'a@test.com', password: '123456' } };
+      const req = { body: { email: 'a@test.com', password: '123456!A' } };
       const res = mockRes();
 
       await signup(req, res, sinon.stub());

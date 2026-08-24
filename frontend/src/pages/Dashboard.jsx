@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Trash2, FileText } from "lucide-react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import axiosClient from "../api/axiosClient";
+import welcomeIllustration from "../assets/NoteNestWelcome.png";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -149,14 +151,34 @@ function Dashboard() {
     navigate("/login");
   }
 
-  const filteredNotes = notes.filter((note) =>
-    note.title.toLowerCase().includes(search.toLowerCase())
-  );
+  // formats a timestamp like "Today, 5:33 PM"
+  function formatTimestamp(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const time = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    return isToday ? `Today, ${time}` : `${date.toLocaleDateString()}, ${time}`;
+  }
+
+  const filteredNotes = notes.filter((note) => {
+  const query = search.toLowerCase();
+  const titleMatch = note.title.toLowerCase().includes(query);
+  const plainContent = note.content.replace(/<[^>]*>/g, "").toLowerCase();
+  const contentMatch = plainContent.includes(query);
+  return titleMatch || contentMatch;
+  });
 
   return (
     <div className="dash-page">
       <div className="dash-sidebar">
-        <h2 className="dash-logo">TalhaNotes</h2>
+        <div className="dash-logo-row">
+          <img src="/NoteNestIcon.png" alt="" className="dash-logo-icon" />
+          <div>
+            <h2 className="dash-logo">NoteNest</h2>
+            <p className="dash-logo-tagline">Your ideas, organized.</p>
+          </div>
+        </div>
 
         <input
           className="dash-search"
@@ -165,7 +187,9 @@ function Dashboard() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <button className="dash-new-btn" onClick={startNewNote}>+ Add Note</button>
+        <button className="dash-new-btn" onClick={startNewNote}>+ New Note</button>
+
+        <p className="dash-notes-label">NOTES</p>
 
         <div className="dash-note-list">
           {filteredNotes.length === 0 && (
@@ -176,11 +200,15 @@ function Dashboard() {
               key={note._id}
               className={`dash-note-item ${selectedNote && selectedNote._id === note._id ? "active" : ""}`}
             >
+              <div className="dash-note-icon">
+                <FileText size={16} />
+              </div>
               <button
                 className="dash-note-select-btn"
                 onClick={() => openNote(note)}
               >
-                {note.title}
+                <span className="dash-note-title">{note.title}</span>
+                <span className="dash-note-time">{formatTimestamp(note.updatedAt || note.createdAt)}</span>
               </button>
               <button
                 className="dash-delete-btn"
@@ -190,7 +218,7 @@ function Dashboard() {
                   requestDelete(note);
                 }}
               >
-                ✕
+                <Trash2 size={14} />
               </button>
             </div>
           ))}
@@ -199,8 +227,11 @@ function Dashboard() {
         <div className="dash-profile">
           {user && (
             <div className="dash-user-info">
-              <div className="dash-user-name">{user.name}</div>
-              <div className="dash-user-email">{user.email}</div>
+              <div className="dash-user-avatar">{user.name?.charAt(0).toUpperCase()}</div>
+              <div>
+                <div className="dash-user-name">{user.name}</div>
+                <div className="dash-user-email">{user.email}</div>
+              </div>
             </div>
           )}
           <button className="dash-logout-btn" onClick={handleLogout}>Logout</button>
@@ -211,7 +242,9 @@ function Dashboard() {
 
         {viewMode === "idle" && (
           <div className="dash-idle">
-            <button className="dash-add-big-btn" onClick={startNewNote}>+ Add Note</button>
+            <img src={welcomeIllustration} alt="" className="dash-idle-illustration" />
+            <h2 className="dash-idle-title">Welcome to NoteNest</h2>
+            <p className="dash-idle-text">Click <strong>+ New Note</strong> to get started</p>
           </div>
         )}
 
@@ -311,7 +344,7 @@ function Dashboard() {
         )}
       </div>
 
-      
+
       {noteToDelete && (
         <div className="dash-modal-overlay">
           <div className="dash-modal">
@@ -324,7 +357,7 @@ function Dashboard() {
         </div>
       )}
 
-     
+
       {toast && <div className="dash-toast">{toast}</div>}
     </div>
   );

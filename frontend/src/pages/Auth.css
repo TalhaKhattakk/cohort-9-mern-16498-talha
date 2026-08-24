@@ -99,3 +99,24 @@
   color: red;
   font-size: 13px;
 }
+.auth-password-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.auth-password-wrapper .auth-input {
+  margin-bottom: 0;
+  padding-right: 36px;
+}
+
+.auth-eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  padding: 0;
+  display: flex;
+}
