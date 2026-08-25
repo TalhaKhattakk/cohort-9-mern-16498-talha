@@ -91,4 +91,40 @@ describe("Signup page", () => {
       });
     });
   });
+
+  test("shows an error and does not call the API when the password is too short", async () => {
+    renderSignup();
+
+    const [nameInput] = screen.getAllByRole("textbox");
+    fireEvent.change(nameInput, { target: { value: "Talha" } });
+    fireEvent.change(screen.getByPlaceholderText("name@example.com"), {
+      target: { value: "talha@test.com" },
+    });
+    fireEvent.change(document.querySelector('input[type="password"]'), {
+      target: { value: "short1!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(await screen.findByText("Password must be at least 8 characters long")).toBeInTheDocument();
+    expect(axiosClient.post).not.toHaveBeenCalled();
+  });
+
+  test("shows an error and does not call the API when the password has no special character", async () => {
+    renderSignup();
+
+    const [nameInput] = screen.getAllByRole("textbox");
+    fireEvent.change(nameInput, { target: { value: "Talha" } });
+    fireEvent.change(screen.getByPlaceholderText("name@example.com"), {
+      target: { value: "talha@test.com" },
+    });
+    fireEvent.change(document.querySelector('input[type="password"]'), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(
+      await screen.findByText("Password must contain at least one special character")
+    ).toBeInTheDocument();
+    expect(axiosClient.post).not.toHaveBeenCalled();
+  });
 });
