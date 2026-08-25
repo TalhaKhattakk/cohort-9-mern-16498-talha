@@ -4,8 +4,10 @@
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 try {
-  dns.setServers(['8.8.8.8', '8.8.4.4']);
+  const dnsServers = (process.env.DNS_SERVERS || '8.8.8.8,8.8.4.4').split(',');
+  dns.setServers(dnsServers);
 } catch (e) {
+  console.error('Failed to set custom DNS servers, falling back to system default:', e.message);
 }
 
 require('dotenv').config();
@@ -19,10 +21,22 @@ const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = process.env.PORT || 5000;
 
 
-app.use(cors());
+const allowedOrigins = new Set((process.env.CORS_ORIGIN || 'http://localhost:5173').split(','));
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(httpLogger); // logs every request + response
 
