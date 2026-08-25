@@ -37,7 +37,7 @@
 
       expect(req.user).to.deep.equal({ id: 'user1', email: 'a@test.com' });
       expect(next.calledOnce).to.be.true;
-      expect(next.firstCall.args.length).to.equal(0); // called with no error
+      expect(next.firstCall.args).to.have.lengthOf(0); // called with no error
     });
 
     it('calls next with a 401 error on an invalid/expired token', () => {
