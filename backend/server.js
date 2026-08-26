@@ -1,10 +1,9 @@
-
 //i wasnt able to connect to the mongo atlas cluster from my home network 
 //i also allowed all ip addresses in the network access settings of the mongo db cluster but still it was not working
 const dns = require('node:dns');
 dns.setDefaultResultOrder('ipv4first');
 try {
-  const dnsServers = (process.env.DNS_SERVERS || '8.8.8.8,8.8.4.4').split(',');
+  const dnsServers = (process.env.DNS_SERVERS || '8.8.8.8,8.8.4.4').split(',').map((s) => s.trim());
   dns.setServers(dnsServers);
 } catch (e) {
   console.error('Failed to set custom DNS servers, falling back to system default:', e.message);
@@ -24,8 +23,14 @@ const app = express();
 app.disable('x-powered-by');
 const PORT = process.env.PORT || 5000;
 
+const isProduction = process.env.NODE_ENV === 'production';
+const corsOriginEnv = process.env.CORS_ORIGIN;
 
-const allowedOrigins = new Set((process.env.CORS_ORIGIN || 'http://localhost:5173').split(','));
+if (isProduction && !corsOriginEnv) {
+  throw new Error('CORS_ORIGIN must be configured in production');
+}
+
+const allowedOrigins = new Set((corsOriginEnv || 'http://localhost:5173').split(',').map((s) => s.trim()));
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.has(origin)) {
@@ -44,13 +49,13 @@ app.use(httpLogger); // logs every request + response
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/notes', require('./routes/notes'));
 
-// no route matched -> 404
+// no route matched will give 404 error
 app.use(notFound);
-// catches every error thrown/forwarded anywhere above - must be last
+// catches every error thrown/forwarded anywhere above
 app.use(errorHandler);
 
 
-mongoose.connect(process.env.MONGO_URI  ).then(() => {
+mongoose.connect(process.env.MONGO_URI).then(() => {
     logger.info('Successfully connected to MongoDB.');
     app.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
@@ -61,7 +66,7 @@ mongoose.connect(process.env.MONGO_URI  ).then(() => {
     process.exit(1); 
   });
 
-// catch anything that slips past express (e.g. errors in non-request code)
+// catch anything that slips past express 
 process.on('unhandledRejection', (err) => {
   logger.error({ err }, 'Unhandled Promise Rejection');
   process.exit(1);
