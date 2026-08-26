@@ -26,11 +26,17 @@ const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === 'production';
 const corsOriginEnv = process.env.CORS_ORIGIN;
 
-if (isProduction && !corsOriginEnv) {
-  throw new Error('CORS_ORIGIN must be configured in production');
+const allowedOrigins = new Set(
+  (corsOriginEnv || 'http://localhost:5173')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
+
+if (isProduction && allowedOrigins.size === 0) {
+  throw new Error('CORS_ORIGIN must be configured with at least one valid origin in production');
 }
 
-const allowedOrigins = new Set((corsOriginEnv || 'http://localhost:5173').split(',').map((s) => s.trim()));
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.has(origin)) {
