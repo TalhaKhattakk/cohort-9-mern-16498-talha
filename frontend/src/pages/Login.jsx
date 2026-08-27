@@ -43,8 +43,9 @@ function Login() {
         {errorMsg && <p className="auth-error">{errorMsg}</p>}
 
         <form onSubmit={handleLogin}>
-          <label className="auth-label">Email</label>
+          <label className="auth-label" htmlFor="email">Email</label>
           <input
+            id="email"
             type="email"
             className="auth-input"
             placeholder="name@example.com"
@@ -54,10 +55,11 @@ function Login() {
           />
 
           <div className="auth-row">
-            <label className="auth-label">Password</label>
+            <label className="auth-label" htmlFor="password">Password</label>
           </div>
           <div className="auth-password-wrapper">
             <input
+              id="password"
               className="auth-input"
               type={showPassword ? "text" : "password"}
               value={password}

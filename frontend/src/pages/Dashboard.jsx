@@ -187,7 +187,7 @@ function Dashboard() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <button className="dash-new-btn" onClick={startNewNote}>+ New Note</button>
+        <button type="button" className="dash-new-btn" onClick={startNewNote}>+ New Note</button>
 
         <p className="dash-notes-label">NOTES</p>
 
@@ -204,6 +204,7 @@ function Dashboard() {
                 <FileText size={16} />
               </div>
               <button
+                type="button"
                 className="dash-note-select-btn"
                 onClick={() => openNote(note)}
               >
@@ -211,6 +212,7 @@ function Dashboard() {
                 <span className="dash-note-time">{formatTimestamp(note.updatedAt || note.createdAt)}</span>
               </button>
               <button
+                type="button"
                 className="dash-delete-btn"
                 aria-label={`Delete ${note.title}`}
                 onClick={(e) => {
@@ -234,7 +236,7 @@ function Dashboard() {
               </div>
             </div>
           )}
-          <button className="dash-logout-btn" onClick={handleLogout}>Logout</button>
+          <button type="button" className="dash-logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
@@ -257,8 +259,8 @@ function Dashboard() {
               dangerouslySetInnerHTML={{ __html: selectedNote.content }}
             />
             <div className="dash-detail-actions">
-              <button className="dash-update-btn" onClick={startEditNote}>Update Note</button>
-              <button className="dash-delete-note-btn" onClick={() => requestDelete(selectedNote)}>
+              <button type="button" className="dash-update-btn" onClick={startEditNote}>Update Note</button>
+              <button type="button" className="dash-delete-note-btn" onClick={() => requestDelete(selectedNote)}>
                 Delete Note
               </button>
             </div>
@@ -350,8 +352,8 @@ function Dashboard() {
           <div className="dash-modal">
             <p>Delete "{noteToDelete.title}"? This can't be undone.</p>
             <div className="dash-modal-actions">
-              <button className="dash-delete-note-btn" onClick={confirmDelete}>Delete</button>
-              <button className="dash-cancel-btn" onClick={cancelDelete}>Cancel</button>
+              <button type="button" className="dash-delete-note-btn" onClick={confirmDelete}>Delete</button>
+              <button type="button" className="dash-cancel-btn" onClick={cancelDelete}>Cancel</button>
             </div>
           </div>
         </div>

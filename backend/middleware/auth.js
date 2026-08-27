@@ -11,7 +11,7 @@ if (!jwtSecret) {
 const auth = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return next(new AppError('No authentication token provided. Authorization denied.', 401));
     }
 

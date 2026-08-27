@@ -60,8 +60,9 @@ function Signup() {
         {errorMsg && <p className="auth-error">{errorMsg}</p>}
 
         <form onSubmit={handleSignup}>
-          <label className="auth-label">Name</label>
+          <label className="auth-label" htmlFor="name">Name</label>
           <input
+            id="name"
             type="text"
             className="auth-input"
             value={name}
@@ -69,8 +70,9 @@ function Signup() {
             required
           />
 
-          <label className="auth-label">Email</label>
+          <label className="auth-label" htmlFor="email">Email</label>
           <input
+            id="email"
             type="email"
             className="auth-input"
             placeholder="name@example.com"
@@ -79,9 +81,10 @@ function Signup() {
             required
           />
 
-          <label className="auth-label">Password</label>
+          <label className="auth-label" htmlFor="password">Password</label>
           <div className="auth-password-wrapper">
           <input
+            id="password"
             className="auth-input"
             type={showPassword ? "text" : "password"}
             value={password}

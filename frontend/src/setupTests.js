@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
+import { TextEncoder, TextDecoder } from 'node:util';
 
 // jsdom (Jest's simulated browser) doesn't provide these by default,
 // but react-router-dom needs them

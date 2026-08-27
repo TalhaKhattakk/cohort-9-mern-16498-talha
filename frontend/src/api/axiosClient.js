@@ -22,7 +22,7 @@ axiosClient.interceptors.response.use(
           ? headers.has("Authorization")
           : Object.keys(headers).some((key) => key.toLowerCase() === "authorization"))
     );
-    if (error.response && error.response.status === 401 && hadAuthHeader) {
+    if (error.response?.status === 401 && hadAuthHeader) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
