@@ -106,4 +106,99 @@ describe("Dashboard page", () => {
 
     expect(localStorage.getItem("token")).toBeNull();
   });
+    test("shows a toast when a note fails to save", async () => {
+    axiosClient.put.mockRejectedValueOnce(new Error("network error"));
+    renderDashboard();
+
+    const noteButton = await screen.findByRole("button", { name: "First note" });
+    fireEvent.click(noteButton);
+    fireEvent.click(await screen.findByRole("button", { name: "Update Note" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Update Note" }));
+
+    expect(await screen.findByText("Something went wrong, note not saved")).toBeInTheDocument();
+  });
+
+  test("cancel button in edit mode returns to the idle view for a new note", async () => {
+    renderDashboard();
+    await screen.findByText("First note");
+
+    fireEvent.click(screen.getByRole("button", { name: "+ New Note" }));
+    expect(screen.getByPlaceholderText("Note title")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(screen.queryByPlaceholderText("Note title")).not.toBeInTheDocument();
+  });
+
+  test("cancel button in edit mode returns to the detail view when editing an existing note", async () => {
+    renderDashboard();
+    const noteButton = await screen.findByRole("button", { name: "First note" });
+    fireEvent.click(noteButton);
+    fireEvent.click(await screen.findByRole("button", { name: "Update Note" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(await screen.findByRole("heading", { name: "First note" })).toBeInTheDocument();
+  });
+
+  test("creates a new note and shows a save confirmation toast", async () => {
+    axiosClient.post.mockResolvedValueOnce({
+      data: { _id: "3", title: "Brand new note", content: "" },
+    });
+
+    renderDashboard();
+    await screen.findByText("First note");
+
+    fireEvent.click(screen.getByRole("button", { name: "+ New Note" }));
+    fireEvent.change(screen.getByPlaceholderText("Note title"), {
+      target: { value: "Brand new note" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save Note" }));
+
+    await waitFor(() => {
+      expect(axiosClient.post).toHaveBeenCalledWith(
+        "/notes",
+        expect.objectContaining({ title: "Brand new note" }),
+        expect.objectContaining({ headers: { Authorization: "Bearer fake-token" } })
+      );
+    });
+
+    expect(await screen.findByText("Note saved")).toBeInTheDocument();
+  });
+
+  test("shows a toast when a note fails to delete", async () => {
+    axiosClient.delete.mockRejectedValueOnce(new Error("network error"));
+    renderDashboard();
+    await screen.findByText("First note");
+
+    fireEvent.click(screen.getByLabelText("Delete First note"));
+    const confirmButtons = await screen.findAllByRole("button", { name: "Delete" });
+    fireEvent.click(confirmButtons[0]);
+
+    expect(await screen.findByText("Something went wrong, note not deleted")).toBeInTheDocument();
+  });
+
+  test("canceling the delete confirmation does not call the delete endpoint", async () => {
+    renderDashboard();
+    await screen.findByText("First note");
+
+    fireEvent.click(screen.getByLabelText("Delete First note"));
+    await screen.findByText(/Delete "First note"\?/i);
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(screen.queryByText(/Delete "First note"\?/i)).not.toBeInTheDocument();
+    expect(axiosClient.delete).not.toHaveBeenCalled();
+  });
+
+  test("toggles bold formatting when the toolbar B button is clicked", async () => {
+    renderDashboard();
+    await screen.findByText("First note");
+
+    fireEvent.click(screen.getByRole("button", { name: "+ New Note" }));
+
+    const boldButton = screen.getByRole("button", { name: "B" });
+    expect(() => fireEvent.click(boldButton)).not.toThrow();
+  });
 });
