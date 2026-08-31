@@ -214,13 +214,6 @@ Current state: quality gate passes, reliability and maintainability are both rat
 
 For coverage - I excluded the bootstrap/wiring files (`server.js`, the route files, `main.jsx`, `axiosClient.js`'s base setup) from the coverage number, since they're mostly plumbing rather than logic and are better proven by actually running the app than by unit tests. The real logic - auth, note CRUD, validation, the dashboard's various flows - is what the test suite is actually aimed at.
 
-## Things I know aren't perfect
-
-- **Auth token lives in localStorage, not an HttpOnly cookie.** A cookie-based approach is more secure since it can't be read by JS on the page, but it needs backend changes too (cookie-parser, adjusted CORS config), so I left this as a known trade-off rather than doing it under time pressure.
-- **No TypeScript.** Kept this intentionally as plain JS per the assignment.
-- **CORS defaults to `http://localhost:5173` in dev.** Fine for local development, but would need a real `CORS_ORIGIN` set before deploying this anywhere for real.
-- **Coverage isn't 100%**, and isn't meant to be - it's focused on business logic rather than every single line.
-
 ## Screens
 
 - **Login / Signup** - matching card layout, tabs to switch between the two, show/hide password toggle
